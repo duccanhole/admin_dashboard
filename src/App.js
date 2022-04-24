@@ -1,58 +1,72 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+//page
+import Home from './page/Home';
+import Product from './page/Product';
+import Login from './page/Login';
+import Account from './page/Account';
+import Orders from './page/Orders';
+import Statistic from './page/Statistic';
+import Error from './page/Error';
+import AccessDenied from './page/AccessDenied';
+//layout
+import NavBar from './layout/NavBar';
+import Footer from './layout/Footer';
+//router
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+} from "react-router-dom";
+//auth
+import isLogin from './auth/auth.js';
+import setHeader from './api/setHeader';
+import { ToastContainer} from 'react-toastify';
+import { useEffect } from 'react';
+import { useDispatch } from "react-redux";
+import { setRole } from "./app/userReducer";
+import axios from 'axios';
+import { authURL } from './api/config';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+export default function App() {
+    const dispatch = useDispatch();
+    if (isLogin()) {
+        setHeader(sessionStorage.getItem('token'))
+    }
+    useEffect(() => {
+        async function storeUser(){
+            try {
+                const res = await axios.get(`${authURL}/user`);
+                // console.log(res.data);
+                dispatch(setRole(res.data.rolesUser));
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        storeUser();
+    }, [dispatch])
+    return (
+        <>
+            <ToastContainer autoClose={5000} theme="colored" />
+            <BrowserRouter>
+                {isLogin() ? (
+                    <>
+                        <NavBar />
+                        <Routes>
+                            <Route path="/" element={<Home />}/>
+                            <Route path="/products" element={<Product />}/>
+                            <Route path="/account" element={<Account />}/>
+                            <Route path="/orders" element={<Orders />} />
+                            <Route path="/statistic" element={<Statistic />} />
+                            <Route path="/access-denied" element={<AccessDenied/>} />
+                            <Route path='*' element={<Error/>}></Route>
+                        </Routes>
+                        <Footer />
+                    </>
+                ) : (
+                    <Routes>
+                        <Route path="*" element={<Login />}></Route>
+                    </Routes>
+                )}
+            </BrowserRouter>
+        </>
+    );
 }
-
-export default App;
