@@ -35,7 +35,7 @@ export default function FormAddNew(props) {
             dispatch(setTypesRedux(res.data.types));
         }
         getTypes();
-    }, []);
+    }, [dispatch]);
     //add file
     const handleAddImage = (e) => {
         //check file size
