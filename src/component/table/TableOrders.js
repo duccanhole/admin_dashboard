@@ -4,6 +4,7 @@ import { Modal, Table, Button, Dropdown, Spinner, Badge } from "react-bootstrap"
 import { BsFillPencilFill, BsFillTrashFill, BsArrowClockwise } from "react-icons/bs";
 import { orderURL } from "../../api/config";
 import FormOrders from "../form/FormOrders";
+import formatMoney from "../formatMoney";
 import axios from "axios";
 //redux store
 import { useDispatch } from "react-redux";
@@ -11,7 +12,7 @@ import { setLoading as setLoadingData, setTotal as setTotalData } from "../../ap
 import OrderActions from "../action/orderActions";
 import SelectBoxAction from "../action/selectBoxAction";
 
-export default function TableOrders() {
+export default function TableOrders(props) {
     const [orders, setOrders] = useState([]);
     const [ordersDefault, setOrdersDefault] = useState([]);
     const [order, setOrder] = useState({});
@@ -23,6 +24,7 @@ export default function TableOrders() {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [orderId, setOrderId] = useState('');
+    const [reload, setReload] = useState(false);
     const dispatch = useDispatch();
     useEffect(() => {
         async function fetchData() {
@@ -59,6 +61,7 @@ export default function TableOrders() {
             setDisabled(true);
             await axios.delete(`${orderURL}/${orderId}`);
             toast.success("Delete order successfully.");
+            setReload(true);
         }
         catch (e) {
             toast.error(e.message);
@@ -98,6 +101,12 @@ export default function TableOrders() {
     useEffect(() => {
         resetPage();
     }, [page, resetPage]);
+    useEffect(() => {
+        if (reload || props.reload) {
+            resetPage();
+            setReload(false);
+        }
+    }, [reload, props.reload, resetPage]);
     const sortData = [
         {
             key: 'default',
@@ -175,7 +184,7 @@ export default function TableOrders() {
                                         <td>{order.userId}</td>
                                         <td>{order._id}</td>
                                         <td>{order.address}</td>
-                                        <td>{order.sum}</td>
+                                        <td>{formatMoney(order.sum)}</td>
                                         <td>{order.status === 1 ?
                                             <Badge bg="success">Available</Badge> :
                                             <Badge bg="danger">Unavailable</Badge>
@@ -211,16 +220,20 @@ export default function TableOrders() {
                 className="d-flex flex-row justify-content-center text-primary"
                 style={{ 'cursor': 'pointer' }}
             >
-                <u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>
+                {page===1?<></>:<u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>}
                 <p className="mx-2"> page {page} </p>
-                <u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>
+                {page===Math.ceil(total/limit)?<></>:<u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>}
             </div>
             <Modal show={showUpdateDialog} onHide={() => setShowUpdateDialog(false)} centered scrollable>
                 <Modal.Header closeButton>
                     <Modal.Title>Update order</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <FormOrders order={order} cancel={() => setShowUpdateDialog(false)} />
+                    <FormOrders 
+                        order={order} 
+                        cancel={() => setShowUpdateDialog(false)} 
+                        reload={(data) => setReload(data)}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
                 </Modal.Footer>

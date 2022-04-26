@@ -58,14 +58,14 @@ export default function FormAddNew(props) {
         const reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
         reader.onload = () => {
-            setImages(images => [...images, reader.result]);
+            setImages([...images, reader.result]);
         }
     }
     //add new product to database
     const addNewProduct = async function (e) {
         e.preventDefault();
         setLoading(true);
-        const mess = validateProduct(name, images, size, color, price, description, type);
+        const mess = validateProduct(name, images.length, size, color, price, description, type);
         if (mess !== '') {
             toast.warning(mess,{
                 position: 'top-center'
@@ -94,10 +94,11 @@ export default function FormAddNew(props) {
             image: images,
             type: type,
         };
-        console.log(product);
+        // console.log(product);
         try {
             await axios.post(productURL, product);
             toast.success('Add new product success');
+            props.reload(true);
         }
         catch (e) {
             console.error(e);

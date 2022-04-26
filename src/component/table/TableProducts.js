@@ -8,9 +8,10 @@ import { useDispatch } from "react-redux";
 import { setTotal as setTotalData, setLoading as setLoadingData } from "../../app/productReducer";
 import SelectBoxAction from "../action/selectBoxAction";
 import ProductsAction from "../action/productActions";
+import formatMoney from "../formatMoney";
 import axios from "axios";
 
-export default function TableProduct() {
+export default function TableProduct(props) {
     const [products, setProducts] = useState([]);
     const [defaultProducts, setDefaultProducts] = useState([]);
     const [dialogDelete, setDialogDelete] = useState(false);
@@ -22,6 +23,7 @@ export default function TableProduct() {
     const [disabled, setDisabled] = useState(false);
     const [total, setTotal] = useState(1);
     const [page, setPage] = useState(1);
+    const [reload, setReload] = useState(props.reload || false);
     const dispatch = useDispatch();
     useEffect(() => {
         async function fetchData() {
@@ -57,6 +59,7 @@ export default function TableProduct() {
             setDisabled(true);
             await axios.delete(`${productURL}/${idProduct}`);
             toast.success("Delete product successfully.");
+            setReload(true);
         }
         catch (e) {
             toast.error(e.message);
@@ -80,7 +83,6 @@ export default function TableProduct() {
         try {
             const response = await fetch(`${productURL}?page=${page}`);
             const data = await response.json();
-            console.log(data);
             setProducts(data.products);
             setDefaultProducts(data.products);
             setTotal(data.total);
@@ -98,6 +100,12 @@ export default function TableProduct() {
     useEffect(() => {
         resetPage();
     }, [page, resetPage]);
+    useEffect(() => {
+        if (reload || props.reload) {
+            setReload(false);
+            resetPage();
+        }
+    }, [reload, resetPage, props.reload]);
     const sortData = [
         {
             key: 'default',
@@ -135,7 +143,6 @@ export default function TableProduct() {
         }
     ];
     const handleSelectChange = (data) => {
-        console.log(data);
         if(data==='filterByType'){
             setDialogFilter(true);
         }
@@ -189,7 +196,7 @@ export default function TableProduct() {
                             <tr key={index}>
                                 <td>{index + 1}</td>
                                 <td>{product.name}</td>
-                                <td>{product.prices}</td>
+                                <td>{formatMoney(product.prices)}</td>
                                 <td>{product.typeId?.type}</td>
                                 <td>
                                     {product.status ?
@@ -227,9 +234,9 @@ export default function TableProduct() {
                 className="d-flex flex-row justify-content-center text-primary"
                 style={{ 'cursor': 'pointer' }}
             >
-                <u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>
+                {page===1?<></>:<u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>}
                 <p className="mx-2"> page {page} </p>
-                <u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>
+                {page===Math.ceil(total / 8)?<></>:<u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>}
             </div>
             {/* Modal DELETE */}
             <Modal show={dialogDelete} onHide={() => setDialogDelete(false)} size="md" centered scrollable>
@@ -250,7 +257,11 @@ export default function TableProduct() {
                     <Modal.Title>Edit product</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center">
-                    <FormEditProduct id={idProduct} cancel={(data) => setDialogEdit(data)} />
+                    <FormEditProduct 
+                        id={idProduct} 
+                        cancel={(data) => setDialogEdit(data)} 
+                        reload={(data) => setReload(data)}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
                 </Modal.Footer>

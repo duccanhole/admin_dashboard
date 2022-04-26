@@ -37,12 +37,14 @@ export default function FormOrders(props) {
             };
             await axios.put(`${orderURL}/${props.order._id}`, body);
             toast.success('Update order successfully');
+            props.reload(true);
         }
         catch(err){
             toast.error(err.message);
         }
         finally{
             setLoading(false);
+            props.cancel();
         }
     }
     return (

@@ -1,11 +1,18 @@
 import { Button, Modal} from "react-bootstrap";
 import TableAccount from "../component/table/TableAccounts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FormAddUser from "../component/form/FormAddUser";
 
 
 export default function Account(){
     const [show, setShow] = useState(false);
+    const [reload, setReload] = useState(false);
+
+    useEffect(() => {
+        if(reload){
+            setReload(false);   
+        }
+    }, [reload]);
 
     return(
         <div className="pt-5 pb-4 tab background">
@@ -17,14 +24,16 @@ export default function Account(){
                 </Button>
             </div>
             <div className="bg-box mt-3 mx-2 rounded">
-                <TableAccount/>
+                <TableAccount reload={reload}/>
             </div>
             <Modal show={show} onHide={()=>setShow(false)} size="md" centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Add user</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <FormAddUser cancel={()=>setShow(false)}/>
+                    <FormAddUser 
+                    cancel={()=>setShow(false)} 
+                    reload={(data)=>setReload(data)}/>
                 </Modal.Body>
                 <Modal.Footer>
                 </Modal.Footer>

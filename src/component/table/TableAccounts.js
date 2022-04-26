@@ -9,7 +9,7 @@ import FormAddUser from "../form/FormAddUser";
 import { useDispatch } from "react-redux";
 import { setLoading as setLoadingData, setTotal as setTotalData } from "../../app/accountReducer";
 
-export default function TableAccount() {
+export default function TableAccount(props) {
     const [accounts, setAccounts] = useState([]);
     const [account, setAccount] = useState({});
     const [loading, setLoading] = useState(false);
@@ -18,14 +18,17 @@ export default function TableAccount() {
     const [dialogEdit, setDialogEdit] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [idAccount, setIdAccount] = useState('');
+    const [total, setTotal] = useState(0);
+    const [reload, setReload] = useState(false);
     const dispatch = useDispatch();
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
             try {
                 const response = await axios.get(`${authURL}/users`);
-                // console.log(response.data);
+                console.log(response.data);
                 setAccounts(response.data.users);
+                setTotal(response.data.total);
                 dispatch(setLoadingData(true));
                 dispatch(setTotalData(response.data.total));
             }
@@ -48,6 +51,7 @@ export default function TableAccount() {
             setDisabled(true);
             await axios.delete(`${authURL}/user/${idAccount}`);
             toast.success("Delete account successfully.");
+            resetPage();
         }
         catch (e) {
             toast.error(e.message);
@@ -71,9 +75,9 @@ export default function TableAccount() {
             setLoading(true);
             const response = await axios.get(`${authURL}/users?page=${page}`);
             setAccounts(response.data.users);
-            if(accounts.length===0){
-                toast.info("No more data.");
-            }
+            // if(accounts.length===0){
+            //     toast.info("No more data.");
+            // }
         }
         catch(e){
             toast.error(e.message);
@@ -81,10 +85,16 @@ export default function TableAccount() {
         finally{
             setLoading(false);
         }
-    }, [page, accounts.length]);
+    }, [page]);
     useEffect(()=>{
         resetPage();
-    },[page, resetPage])
+    },[page, resetPage]);
+    useEffect(()=>{
+        if(reload || props.reload){
+            resetPage();
+            setReload(false);
+        }
+    },[reload, resetPage, props.reload]);
     return (
         <>
             <div className="text-center">
@@ -149,9 +159,9 @@ export default function TableAccount() {
                 className="d-flex flex-row justify-content-center text-primary"
                 style={{ 'cursor': 'pointer' }}
             >
-                <u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>
+                {page===1?<></>:<u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>}
                 <p className="mx-2"> page {page} </p>
-                <u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>
+                {page===Math.ceil(total/8)?<></>:<u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>}
             </div>
             <Modal show={dialogDelete} onHide={() => setDialogDelete(false)} size="md" centered scrollable>
                 <Modal.Header closeButton>
@@ -175,6 +185,7 @@ export default function TableAccount() {
                         user={account}
                         type="update"
                         cancel={() => setDialogEdit(false)}
+                        reload={(data)=>setReload(data)}
                     />
                 </Modal.Body>
                 <Modal.Footer>
