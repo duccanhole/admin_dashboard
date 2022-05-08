@@ -1,11 +1,12 @@
 
-export default function validateProduct(name, arrSize, arrColor, price, description, images, type){
+export default function validateProduct(name, arrSize, arrColor, price, description, imagesLength, type){
     let message = '';
+    // console.log(images);
     switch(true){
         case name==='':
             message = 'name is required.';
             break;
-        case images.length===0:
+        case imagesLength===0:
             message = 'image is required.';
             break;
         case arrSize.length===0:

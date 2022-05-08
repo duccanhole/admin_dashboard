@@ -37,12 +37,14 @@ export default function FormOrders(props) {
             };
             await axios.put(`${orderURL}/${props.order._id}`, body);
             toast.success('Update order successfully');
+            props.reload(true);
         }
         catch(err){
             toast.error(err.message);
         }
         finally{
             setLoading(false);
+            props.cancel();
         }
     }
     return (
@@ -65,8 +67,8 @@ export default function FormOrders(props) {
                 <Form.Label>Status</Form.Label>
                 <Form.Control as="select"
                     defaultValue={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value={1}>Available</option>
-                    <option value={2}>Unavailable</option>
+                    <option value={1}>Waiting</option>
+                    <option value={0}>Success</option>
                 </Form.Control>
                 <Form.Label>Value</Form.Label>
                 <Form.Control type="number"

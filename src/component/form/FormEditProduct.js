@@ -92,6 +92,7 @@ export default function FormEditProduct(props) {
             //console.log(body);
             await axios.put(`${productURL}/${props.id}`, body);
             toast.success('Edit product success');
+            props.reload(true);
             props.cancel(false);
         }
         catch(e){

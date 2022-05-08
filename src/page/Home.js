@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { BsFileEarmarkTextFill } from 'react-icons/bs';
-import { Modal, Spinner } from 'react-bootstrap';
+import { Modal, Spinner, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { authURL } from '../api/config';
 import FormAddUser from '../component/form/FormAddUser';
+import FormAddRoute from '../component/form/FormAddRoute';
 import axios from 'axios';
 
 export default function Home() {
     const [loading, setLoading] = useState(false);
     const [dialogAdd, setDialogAdd] = useState(false);
+    const [dialogRoute, setDialogRoute] = useState(false);
     const [user, setUser] = useState({});
     useEffect(() => {
         async function fetchData() {
@@ -49,6 +51,8 @@ export default function Home() {
                     }
                 </ul>
                 <hr/>
+                <Button className='ms-4' onClick={() => setDialogRoute(true)}>Add new route</Button>
+                <hr/>
                 <b className='text-info ps-4' style={{'cursor':'pointer'}} onClick={updateProfile}>
                     <u>Update my profile</u>
                 </b>
@@ -63,6 +67,16 @@ export default function Home() {
                         user={user}
                         type='update' 
                         cancel={()=>setDialogAdd(false)}/>
+                </Modal.Body>
+                <Modal.Footer>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={dialogRoute} onHide={()=>setDialogRoute(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add new route</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <FormAddRoute cancel={()=>setDialogRoute(false)}/>
                 </Modal.Body>
                 <Modal.Footer>
                 </Modal.Footer>

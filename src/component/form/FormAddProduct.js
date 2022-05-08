@@ -14,14 +14,14 @@ export default function FormAddNew(props) {
     const [images, setImages] = useState([]);
     //size
     const [size, setSize] = useState(0);
-    const [arrSize, setArrSize] = useState([]);
+    const [arrSize, setArrSize] = useState([35, 36,37,38, 39, 30]);
     //color
     const [color, setColor] = useState('');
-    const [arrColor, setArrColor] = useState([]);
+    const [arrColor, setArrColor] = useState(['black', 'white', 'red', 'blue', 'green', 'yellow']);
     //price
     const [price, setPrice] = useState(0);
     //description
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState('comming soon...');
     //type
     const [types, setTypes] = useState([]);
     const [type, setType] = useState('');
@@ -37,11 +37,11 @@ export default function FormAddNew(props) {
         getTypes();
     }, [dispatch]);
     //add file
-    const handleAddImage = (e) => {
+    const handleAddImage = async(e) => {
         //check file size
         const size = e.target.files[0].size;
-        if (size > 100000) {
-            toast.warning('Please choose image less than 100mb', {
+        if (size > 150000) {
+            toast.warning('Please choose image less than 150mb', {
                 position: 'top-center'
             });
             return;
@@ -54,18 +54,31 @@ export default function FormAddNew(props) {
             });
             return;
         }
-        //convert image to base64
+        // convert image to base64
         const reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
         reader.onload = () => {
-            setImages(images => [...images, reader.result]);
+            setImages([...images, reader.result]);
         }
+        // let imgs = [];
+        // for (let image of images) {
+        //     const form = new FormData();
+        //     form.append('file', image);
+        //     form.append('upload_preset', 'qmpupf7a');
+        //     imgs.push(form);
+        // }
+        // delete axios.defaults.headers.common["Authorization"];
+        // await axios.all(
+        //     imgs.map((item) => axios.post("https://api.cloudinary.com/v1_1/do8rqqyn4/upload", item))
+        // );
+        // setImages([...imgs]);
+        // setHeader(sessionStorage.getItem('token'));
     }
     //add new product to database
     const addNewProduct = async function (e) {
         e.preventDefault();
         setLoading(true);
-        const mess = validateProduct(name, images, size, color, price, description, type);
+        const mess = validateProduct(name, arrSize, arrColor, price, description, images.length, type);
         if (mess !== '') {
             toast.warning(mess,{
                 position: 'top-center'
@@ -94,10 +107,11 @@ export default function FormAddNew(props) {
             image: images,
             type: type,
         };
-        console.log(product);
+        // console.log(product);
         try {
             await axios.post(productURL, product);
             toast.success('Add new product success');
+            props.reload(true);
         }
         catch (e) {
             console.error(e);
@@ -213,7 +227,7 @@ export default function FormAddNew(props) {
 
                     <Form.Label>Description</Form.Label>
                     <Form.Control as='textarea' role='5'
-                        data={description}
+                        value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     >
                     </Form.Control>
