@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { Modal, Table, Button, Dropdown, Spinner, Badge } from "react-bootstrap";
-import { BsFillPencilFill, BsFillTrashFill, BsArrowClockwise } from "react-icons/bs";
+import { BsFillPencilFill, BsFillTrashFill, BsArrowClockwise, BsFileEarmarkTextFill } from "react-icons/bs";
 import { orderURL } from "../../api/config";
 import FormOrders from "../form/FormOrders";
 import formatMoney from "../formatMoney";
+import DetailOrder from "../DetailOrder";
 import axios from "axios";
 //redux store
 import { useDispatch } from "react-redux";
@@ -22,6 +23,7 @@ export default function TableOrders(props) {
     const [limit, setLimit] = useState(8);
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showDetailDialog, setShowDetailDialog] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [orderId, setOrderId] = useState('');
     const [reload, setReload] = useState(false);
@@ -55,6 +57,10 @@ export default function TableOrders(props) {
     const handleDeleteDialog = (id) => {
         setOrderId(id);
         setShowDeleteDialog(true);
+    }
+    const handleDetailDialog = (id) => {
+        setOrderId(id);
+        setShowDetailDialog(true);
     }
     const handleDeleteOrder = async () => {
         try {
@@ -139,7 +145,7 @@ export default function TableOrders(props) {
             value: 'Unavailable',
         },
     ];
-    const handleSelectChange = (data)=>{
+    const handleSelectChange = (data) => {
         setOrders([...OrderActions(ordersDefault, data)]);
     }
     return (
@@ -186,8 +192,8 @@ export default function TableOrders(props) {
                                         <td>{order.address}</td>
                                         <td>{formatMoney(order.sum)}</td>
                                         <td>{order.status === 1 ?
-                                            <Badge bg="success">Available</Badge> :
-                                            <Badge bg="danger">Unavailable</Badge>
+                                            <Badge bg="warning">Waiting</Badge> :
+                                            <Badge bg="success">Success</Badge>
                                         }</td>
                                         <td>{order.createdAt.slice(0, 10)}</td>
                                         <td>
@@ -195,14 +201,22 @@ export default function TableOrders(props) {
                                                 <Dropdown.Toggle className="rounded-circle" variant="primary">
                                                 </Dropdown.Toggle>
                                                 <Dropdown.Menu className="text-center bg-secondary">
-                                                    <Button variant="success"
+                                                    <Button variant="secondary"
+                                                        style={{'backgroundColor': '#3949AB'}}
+                                                        className="mx-1"
+                                                        onClick={() => handleDetailDialog(order._id)}
+                                                    >
+                                                        <BsFileEarmarkTextFill />
+                                                    </Button>
+                                                    <Button variant="secondary"
                                                         style={{ 'backgroundColor': '#65a30d' }}
                                                         className="mx-1"
                                                         onClick={() => handleUpdateDialog(order)}
                                                     >
                                                         <BsFillPencilFill />
                                                     </Button>
-                                                    <Button variant="danger" className="mx-1"
+                                                    <Button variant="danger"
+                                                        className="mx-1"
                                                         onClick={() => handleDeleteDialog(order._id)}
                                                     >
                                                         <BsFillTrashFill />
@@ -220,18 +234,18 @@ export default function TableOrders(props) {
                 className="d-flex flex-row justify-content-center text-primary"
                 style={{ 'cursor': 'pointer' }}
             >
-                {page===1?<></>:<u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>}
+                {page === 1 ? <></> : <u className="mx-2" onClick={() => setPage(page - 1)}>Previous</u>}
                 <p className="mx-2"> page {page} </p>
-                {page===Math.ceil(total/limit)?<></>:<u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>}
+                {page === Math.ceil(total / limit) ? <></> : <u className="mx-2" onClick={() => setPage(page + 1)}>Next</u>}
             </div>
             <Modal show={showUpdateDialog} onHide={() => setShowUpdateDialog(false)} centered scrollable>
                 <Modal.Header closeButton>
                     <Modal.Title>Update order</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <FormOrders 
-                        order={order} 
-                        cancel={() => setShowUpdateDialog(false)} 
+                    <FormOrders
+                        order={order}
+                        cancel={() => setShowUpdateDialog(false)}
                         reload={(data) => setReload(data)}
                     />
                 </Modal.Body>
@@ -253,6 +267,16 @@ export default function TableOrders(props) {
                         Yes
                     </Button>
                 </Modal.Footer>
+            </Modal>
+            <Modal show={showDetailDialog} onHide={() => setShowDetailDialog(false)} centered scrollable>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detail order</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <DetailOrder id={orderId} />
+                </Modal.Body>
+                <Modal.Footer>
+                </Modal.Footer> 
             </Modal>
         </>
     );

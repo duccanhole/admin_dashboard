@@ -20,6 +20,7 @@ function NavBar() {
     const role = useSelector((state) => state.user.role);
     const handleLogout = () => {
         sessionStorage.removeItem('token');
+        window.location.href = '/';
         window.location.reload();
     };
     useEffect(() => {

@@ -207,7 +207,7 @@ export default function TableProduct(props) {
                                     {product.createdAt.slice(0,10)}
                                 </td>
                                 <td>
-                                    <Dropdown>
+                                    <Dropdown drop="start">
                                         <Dropdown.Toggle className="rounded-circle" variant="primary">
                                         </Dropdown.Toggle>
                                         <Dropdown.Menu className="text-center bg-secondary">

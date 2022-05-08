@@ -4,7 +4,7 @@ import axios from "axios";
 import { productURL } from "../../api/config";
 import { toast } from "react-toastify";
 
-export default function FormAddType(){
+export default function FormAddType(props){
     const [loading, setLoading] = useState(false);
     const [types, setTypes] = useState([]);
     const [type, setType] = useState('');
@@ -12,32 +12,36 @@ export default function FormAddType(){
         async function getType(){
             const res = await axios.get(`${productURL}/types/all`);
             setTypes(res.data.types);
+            console.log(res.data.types);
         }
         getType();
     },[])
     const handleSubmit = async (e)=>{
         e.preventDefault();
         setLoading(true);
-        let isValid = true;
         if(type===''){
-            isValid=false;
             toast.warning('Please choose type',{
                 position: 'top-center'
             });
             setLoading(false);
             return;
         }
-        for(let item of types){
-            if(item.type===type.trim().toLowerCase()){
-                toast.warning('Type already exists',{
-                    position: 'top-center'
-                });
-                isValid=false;
-                setLoading(false);
-                return;
-            }
-        }
-        if(!isValid) return;
+        if(props.type==='add') addType();
+        else removeType();
+    }
+    const addType = async()=>{
+        // let isValid = true;
+        // for(let item of types){
+        //     if(item.type===type.trim().toLowerCase() && item.){
+        //         toast.warning('Type already exists',{
+        //             position: 'top-center'
+        //         });
+        //         isValid=false;
+        //         setLoading(false);
+        //         return;
+        //     }
+        // }
+        // if(!isValid) return;
         try{
             const body = {
                 type: type
@@ -48,6 +52,25 @@ export default function FormAddType(){
         catch(e){
             console.error(e);
             toast.error('Add new type failed.');
+        }
+        finally{
+            setLoading(false);
+        }
+    }
+    const removeType = async()=>{
+        try{
+            for(let item of types){
+                if(item.type===type.trim().toLowerCase()){
+                    await axios.delete(`${productURL}/type/${item._id}`);
+                    toast.success('Remove type successfully.');
+                    return;
+                }
+            }
+            toast.warning('Type not found');
+        }
+        catch(e){
+            console.error(e);
+            toast.error('Remove type failed.');
         }
         finally{
             setLoading(false);
